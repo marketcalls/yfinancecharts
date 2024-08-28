@@ -17,8 +17,8 @@ To run this application locally, follow these steps:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/maketcalls/yfinance-streamit
-   cd yfinance-streamlit
+   git clone https://github.com/maketcalls/yfinancecharts
+   cd yfinancecharts
    ```
 
 2. Install the required dependencies:
