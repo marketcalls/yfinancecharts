@@ -24,6 +24,11 @@ ema10_period = st.sidebar.number_input("EMA-10 Lookback Period", min_value=1, ma
 show_ema20 = st.sidebar.checkbox("Show EMA-20", value=True)
 ema20_period = st.sidebar.number_input("EMA-20 Lookback Period", min_value=1, max_value=100, value=20) if show_ema20 else None
 
+# Inputs for Supertrend indicator
+show_supertrend = st.sidebar.checkbox("Show Supertrend", value=True)
+supertrend_factor = st.sidebar.number_input("Supertrend Factor/Multiplier", min_value=1, max_value=10, value=3) if show_supertrend else None
+supertrend_atr_period = st.sidebar.number_input("Supertrend ATR Period", min_value=1, max_value=100, value=10) if show_supertrend else None
+
 generate_chart = st.sidebar.button("Get Charts")
 
 # Chart display in the main area
@@ -40,21 +45,28 @@ if generate_chart:
             data['EMA-10'] = ta.ema(data['Close'], length=ema10_period)
         if show_ema20:
             data['EMA-20'] = ta.ema(data['Close'], length=ema20_period)
-        
+        if show_supertrend:
+            supertrend = ta.supertrend(data['High'], data['Low'], data['Close'], length=supertrend_atr_period, multiplier=supertrend_factor)
+            data['Supertrend'] = supertrend['SUPERT_10_3.0']
+            data['Supertrend Direction'] = supertrend['SUPERTd_10_3.0']
+
         # Get the latest values of indicators
         latest_rsi = data['RSI'].iloc[-1] if show_rsi else None
         latest_ema10 = data['EMA-10'].iloc[-1] if show_ema10 else None
         latest_ema20 = data['EMA-20'].iloc[-1] if show_ema20 else None
+        latest_supertrend = data['Supertrend'].iloc[-1] if show_supertrend else None
 
         # Display metrics in a card format
         with st.container():
-            cols = st.columns(3)
+            cols = st.columns(4)
             if show_rsi:
                 cols[0].metric(label=f"RSI-{rsi_period}", value=f"{latest_rsi:.2f}")
             if show_ema10:
                 cols[1].metric(label=f"EMA-{ema10_period}", value=f"{latest_ema10:.2f}")
             if show_ema20:
                 cols[2].metric(label=f"EMA-{ema20_period}", value=f"{latest_ema20:.2f}")
+            if show_supertrend:
+                cols[3].metric(label="Supertrend", value=f"{latest_supertrend:.2f}")
 
         # Create subplots: rows=2, cols=1
         fig = make_subplots(rows=2, cols=1, shared_xaxes=True, 
@@ -79,7 +91,13 @@ if generate_chart:
             fig.add_trace(go.Scatter(x=data.index, y=data['EMA-20'],
                                      mode='lines', name=f'EMA-{ema20_period}',
                                      line=dict(color='blue')), row=1, col=1)
-        
+
+        # Add Supertrend to the candlestick chart if selected
+        if show_supertrend:
+            fig.add_trace(go.Scatter(x=data.index, y=data['Supertrend'],
+                                     mode='lines', name='Supertrend',
+                                     line=dict(color='green')), row=1, col=1)
+
         # Add RSI to the second row
         if show_rsi:
             fig.add_trace(go.Scatter(x=data.index, y=data['RSI'],
@@ -92,8 +110,8 @@ if generate_chart:
             xaxis_title='Date',
             yaxis_title='Price',
             template='plotly_dark',
-            width=800,  # Set chart width
-            height=600,  # Set chart height
+            width=1200,  # Set chart width
+            height=800,  # Set chart height
             xaxis2=dict(nticks=10),  # Reduce the number of x-axis labels to 10 ticks in the RSI chart
             yaxis2=dict(title='RSI', range=[0, 100]),  # Set RSI range to 0-100
             xaxis_rangeslider_visible=False,  # Remove range slider for the first x-axis
