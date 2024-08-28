@@ -6,7 +6,7 @@ from datetime import datetime
 from plotly.subplots import make_subplots  # Import for creating subplots
 
 # Set the title of the app
-st.title('Stock Candlestick Chart Application with Indicators')
+st.title('yfinance Candlestick Charts')
 
 # Input fields in the sidebar
 symbol = st.sidebar.text_input("Enter Stock Symbol (e.g., RELIANCE.NS)", "RELIANCE.NS")
